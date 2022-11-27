@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "hardhat/console.sol";
@@ -17,16 +17,13 @@ contract Bet {
     }  
 
     Player[] public playerBets;
-    Player[] public playerWinners; 
-  
+      
     modifier isOwner() {
         require(msg.sender == owner, "Somente o owner pode chamar esse metodo!");
         _;
     }
-
     
     event Winner(address indexed addressPlayer, uint256 valueToPay);
-
 
     constructor () {
         owner = msg.sender; 
@@ -44,20 +41,16 @@ contract Bet {
         totalBetValue += betValue;
         console.log("Valor total apostado:", totalBetValue);
     }
-     
+        
+
     function payWinners(uint256 _scoreTeam1, uint256 _scoreTeam2) public isOwner {                  
 
         for (uint i=0; i < playerBets.length; i++) {
             if (playerBets[i].scoreTeam1 == _scoreTeam1 && playerBets[i].scoreTeam2 == _scoreTeam2){
-                playerWinners.push(Player(playerBets[i].addressPlayer,playerBets[i].scoreTeam1,playerBets[i].scoreTeam2,playerBets[i].betValue));                                         
+                uint256 valueToPay = playerBets[i].betValue + (playerBets[i].betValue / totalBetValue) * totalBetValue;                   
+                payable(playerBets[i].addressPlayer).transfer(valueToPay);
+                emit Winner(playerBets[i].addressPlayer,valueToPay); 
             }
-        }
-
-        for (uint i=0; i < playerWinners.length; i++) {              
-            uint256 valueToPay = playerWinners[i].betValue + (playerWinners[i].betValue / totalBetValue) * totalBetValue;                   
-            payable(playerWinners[i].addressPlayer).transfer(valueToPay);
-            emit Winner(playerWinners[i].addressPlayer,valueToPay);        
-        }   
-                       
+        }                      
     }
 }
